@@ -169,7 +169,7 @@ class LunrCliParser implements CliParserInterface
 
         if (isset($opt[0]) && $opt[0] == '-')
         {
-            if (strlen($opt) < 1)
+            if (strlen($opt) < 2)
             {
                 return $this->isValidShort($opt, $index);
             }
@@ -218,7 +218,14 @@ class LunrCliParser implements CliParserInterface
 
         $this->ast[$opt] = [];
 
-        return $this->checkArgument($opt, $index, $pos, $this->short);
+        $validArgs = $this->checkArgument($opt, $index, $pos, $this->short);
+
+        if ($validArgs === FALSE)
+        {
+            unset($this->ast[$opt]);
+        }
+
+        return $validArgs;
     }
 
     /**
@@ -262,7 +269,14 @@ class LunrCliParser implements CliParserInterface
 
         $this->ast[$opt] = [];
 
-        return $this->checkArgument($opt, $index, strlen($opt) - 1, $this->long[$args]);
+        $validArgs = $this->checkArgument($opt, $index, strlen($opt) - 1, $this->long[$args]);
+
+        if ($validArgs === FALSE)
+        {
+            unset($this->ast[$opt]);
+        }
+
+        return $validArgs;
     }
 
     /**
@@ -284,7 +298,7 @@ class LunrCliParser implements CliParserInterface
         {
             if (!in_array($a[$pos + 1], [ ':', ';' ]))
             {
-                return FALSE;
+                return TRUE;
             }
 
             $type = $a[$pos + 1] == ':' ? ':' : ';';
@@ -310,23 +324,26 @@ class LunrCliParser implements CliParserInterface
 
                 if ($type == ':')
                 {
-                    trigger_error('Missing argument for -' . $opt, E_USER_WARNING);
+                    $prefix = strlen($opt) > 1 ? '--' : '-';
+                    trigger_error('Missing argument for ' . $prefix . $opt, E_USER_WARNING);
                     $this->error = TRUE;
+                    return FALSE;
                 }
             }
             elseif ($type == ':')
             {
-                trigger_error('Missing argument for -' . $opt, E_USER_WARNING);
+                $prefix = strlen($opt) > 1 ? '--' : '-';
+                trigger_error('Missing argument for ' . $prefix . $opt, E_USER_WARNING);
                 $this->error = TRUE;
+                return FALSE;
             }
         }
         elseif (count($this->args) > $next && !strpos($a, $opt))
         {
-            trigger_error('Superfluous argument: ' . $this->args[$next], E_USER_NOTICE);
             return TRUE;
         }
 
-        return FALSE;
+        return TRUE;
     }
 
 }

@@ -77,6 +77,8 @@ abstract class LunrCliParserTestCase extends LunrBaseTestCase
         $params[] = [ 'b;', [ 'test.php', '-b', 'arg' ], [ 'b' => [ 'arg' ] ] ];
         $params[] = [ 'b;;', [ 'test.php', '-b', 'arg1', 'arg2' ], [ 'b' => [ 'arg1', 'arg2' ] ] ];
         $params[] = [ 'b;;;', [ 'test.php', '-b', 'arg1', 'arg2', 'arg3' ], [ 'b' => [ 'arg1', 'arg2', 'arg3' ] ] ];
+        $params[] = [ 'ab', [ 'test.php', '-a', '-b' ], [ 'a' => [], 'b' => [] ] ];
+        $params[] = [ 'a:b', [ 'test.php', '-a', 'arg', '-b' ], [ 'a' => [ 'arg' ], 'b' => [] ] ];
 
         return $params;
     }
@@ -96,6 +98,66 @@ abstract class LunrCliParserTestCase extends LunrBaseTestCase
         $params[] = [ [ 'second;' ], [ 'test.php', '--second', 'arg' ], [ 'second' => [ 'arg' ] ] ];
         $params[] = [ [ 'second;;' ], [ 'test.php', '--second', 'arg1', 'arg2' ], [ 'second' => [ 'arg1', 'arg2' ] ] ];
         $params[] = [ [ 'second;;;' ], [ 'test.php', '--second', 'arg1', 'arg2', 'arg3' ], [ 'second' => [ 'arg1', 'arg2', 'arg3' ] ] ];
+
+        return $params;
+    }
+
+    /**
+     * Unit test data provider for parameters with superfluous arguments.
+     *
+     * @return array $params Array of parameters with superfluous arguments
+     */
+    public static function superfluousArgumentsForShortParametersProvider(): array
+    {
+        $params   = [];
+        $params[] = [ 'a', [ 'test.php', '-a', 'arg' ], [ 'a' => [] ] ];
+        $params[] = [ 'a:', [ 'test.php', '-a', 'arg1', 'arg' ], [ 'a' => [ 'arg1' ] ] ];
+        $params[] = [ 'a::', [ 'test.php', '-a', 'arg1', 'arg2', 'arg' ], [ 'a' => [ 'arg1', 'arg2' ] ] ];
+
+        return $params;
+    }
+
+    /**
+     * Unit test data provider for parameters with superfluous arguments.
+     *
+     * @return array $params Array of parameters with superfluous arguments
+     */
+    public static function superfluousArgumentsForLongParametersProvider(): array
+    {
+        $params   = [];
+        $params[] = [ [ 'first' ], [ 'test.php', '--first', 'arg' ], [ 'first' => [] ] ];
+        $params[] = [ [ 'first:' ], [ 'test.php', '--first', 'arg1', 'arg' ], [ 'first' => [ 'arg1' ] ] ];
+        $params[] = [ [ 'first::' ], [ 'test.php', '--first', 'arg1', 'arg2', 'arg' ], [ 'first' => [ 'arg1', 'arg2' ] ] ];
+
+        return $params;
+    }
+
+    /**
+     * Unit test data provider for parameters with missing arguments.
+     *
+     * @return array $params Array of parameters with missing arguments
+     */
+    public static function missingArgumentsForShortParametersProvider(): array
+    {
+        $params   = [];
+        $params[] = [ 'a:', [ 'test.php', '-a' ] ];
+        $params[] = [ 'a::', [ 'test.php', '-a', 'arg1' ] ];
+        $params[] = [ 'a:::', [ 'test.php', '-a', 'arg1', 'arg2' ] ];
+
+        return $params;
+    }
+
+    /**
+     * Unit test data provider for parameters with missing arguments.
+     *
+     * @return array $params Array of parameters with missing arguments
+     */
+    public static function missingArgumentsForLongParametersProvider(): array
+    {
+        $params   = [];
+        $params[] = [ [ 'first:' ], [ 'test.php', '--first' ] ];
+        $params[] = [ [ 'first::' ], [ 'test.php', '--first', 'arg1' ] ];
+        $params[] = [ [ 'first:::' ], [ 'test.php', '--first', 'arg1', 'arg2' ] ];
 
         return $params;
     }

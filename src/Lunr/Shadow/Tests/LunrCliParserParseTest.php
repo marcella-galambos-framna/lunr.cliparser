@@ -91,7 +91,6 @@ class LunrCliParserParseTest extends LunrCliParserTestCase
      * @param mixed $param Invalid Parameter
      *
      * @dataProvider invalidParameterProvider
-     * @depends      Lunr\Shadow\Tests\LunrCliParserIsOptTest::testIsOptReturnsFalseForInvalidParameter
      * @covers       Lunr\Shadow\LunrCliParser::parse
      */
     public function testParseArgvWithIncompleteArguments($param): void
@@ -146,6 +145,145 @@ class LunrCliParserParseTest extends LunrCliParserTestCase
         $value = $this->class->parse();
 
         $this->assertSame($ast, $value);
+    }
+
+    /**
+     * Test parsing short parameters with superfluous arguments.
+     *
+     * @param string $shortopt Short options string
+     * @param array  $params   Array of passed arguments
+     * @param array  $ast      Array of expected parsed ast
+     *
+     * @dataProvider superfluousArgumentsForShortParametersProvider
+     * @covers       Lunr\Shadow\LunrCliParser::parse
+     */
+    public function testParseShortParameterWithSuperfluousArgument($shortopt, $params, $ast): void
+    {
+        $this->setReflectionPropertyValue('short', $shortopt);
+
+        $this->expectUserNotice('Superfluous argument: arg');
+
+        $_SERVER['argv'] = $params;
+
+        $value = $this->class->parse();
+
+        $this->assertSame($ast, $value);
+    }
+
+    /**
+     * Test parsing long parameters with superfluous arguments.
+     *
+     * @param string $longopt Long options string
+     * @param array  $params  Array of passed arguments
+     * @param array  $ast     Array of expected parsed ast
+     *
+     * @dataProvider superfluousArgumentsForLongParametersProvider
+     * @covers       Lunr\Shadow\LunrCliParser::parse
+     */
+    public function testParseLongParametersWithSuperfluousArguments($longopt, $params, $ast): void
+    {
+        $this->setReflectionPropertyValue('long', $longopt);
+
+        $this->expectUserNotice('Superfluous argument: arg');
+
+        $_SERVER['argv'] = $params;
+
+        $value = $this->class->parse();
+
+        $this->assertSame($ast, $value);
+    }
+
+    /**
+     * Test parsing short parameters with missing arguments.
+     *
+     * @param string $shortopt Short options string
+     * @param array  $params   Array of passed arguments
+     *
+     * @dataProvider missingArgumentsForShortParametersProvider
+     * @covers       Lunr\Shadow\LunrCliParser::parse
+     */
+    public function testParseShortParametersWithMissingArguments($shortopt, $params): void
+    {
+        $this->setReflectionPropertyValue('short', $shortopt);
+
+        $this->expectUserWarning('Missing argument for -a');
+
+        $_SERVER['argv'] = $params;
+
+        $value = $this->class->parse();
+
+        $this->assertSame([], $value);
+    }
+
+    /**
+     * Test parsing short parameters with missing arguments.
+     *
+     * @param string $shortopt Short options string
+     * @param array  $params   Array of passed arguments
+     *
+     * @dataProvider missingArgumentsForShortParametersProvider
+     * @covers       Lunr\Shadow\LunrCliParser::parse
+     */
+    public function testParseShortParametersWithMissingArgumentsAndParameterAfter($shortopt, $params): void
+    {
+        $this->setReflectionPropertyValue('short', $shortopt . 'b');
+
+        $this->expectUserWarning('Missing argument for -a');
+
+        $_SERVER['argv']   = $params;
+        $_SERVER['argv'][] = '-b';
+
+        $value = $this->class->parse();
+
+        $this->assertSame([ 'b' => [] ], $value);
+    }
+
+    /**
+     * Test parsing long parameters with missing arguments.
+     *
+     * @param string $longopt Long options string
+     * @param array  $params  Array of passed arguments
+     *
+     * @dataProvider missingArgumentsForLongParametersProvider
+     * @covers       Lunr\Shadow\LunrCliParser::parse
+     */
+    public function testParseLongParametersWithMissingArguments($longopt, $params): void
+    {
+        $this->setReflectionPropertyValue('long', $longopt);
+
+        $this->expectUserWarning('Missing argument for --first');
+
+        $_SERVER['argv'] = $params;
+
+        $value = $this->class->parse();
+
+        $this->assertSame([], $value);
+    }
+
+    /**
+     * Test parsing long parameters with missing arguments.
+     *
+     * @param string $longopt Long options string
+     * @param array  $params  Array of passed arguments
+     *
+     * @dataProvider missingArgumentsForLongParametersProvider
+     * @covers       Lunr\Shadow\LunrCliParser::parse
+     */
+    public function testParseLongParametersWithMissingArgumentsAndParameterAfter($longopt, $params): void
+    {
+        $options   = $longopt;
+        $options[] = 'second';
+
+        $this->setReflectionPropertyValue('long', $options);
+
+        $this->expectUserWarning('Missing argument for --first');
+
+        $_SERVER['argv']   = $params;
+        $_SERVER['argv'][] = '--second';
+
+        $value = $this->class->parse();
+
+        $this->assertSame([ 'second' => [] ], $value);
     }
 
 }
